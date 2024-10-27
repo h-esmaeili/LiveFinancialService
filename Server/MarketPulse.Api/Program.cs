@@ -1,9 +1,15 @@
+using MarketPulse.Api.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register WebSocket connection manager and price update service
+builder.Services.AddSingleton<WebSocketConnectionManager>();
 
 var app = builder.Build();
 
@@ -17,5 +23,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+app.UseWebSockets();
+app.UseMiddleware<WebSocketMiddleware>();
 
 app.Run();
