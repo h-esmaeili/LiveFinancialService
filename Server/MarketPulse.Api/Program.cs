@@ -1,5 +1,7 @@
 using MarketPulse.Api.Middleware;
 using MarketPulse.Api.Models;
+using MarketPulse.Api.Service;
+using MarketPulse.Api.ServiceAgent;
 using MarketPulse.Api.ServiceWorker;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<TiingoSettings>(builder.Configuration.GetSection("TiingoSettings"));
 builder.Services.AddSingleton<WebSocketConnectionManager>();
 builder.Services.AddHostedService<MarketUpdateService>();
+builder.Services.AddHttpClient<MarketApiClient>(options => { options.BaseAddress = new Uri("https://api.tiingo.com"); });
+builder.Services.AddScoped<IInstrumentService, InstrumentService>();
 
 var app = builder.Build();
 
