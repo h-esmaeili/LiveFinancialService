@@ -1,4 +1,4 @@
-@MarketPulse.Api_HostAddress = http://localhost:5077
+@MarketPulse.Api_HostAddress = http://localhost:50600
 
 GET {{MarketPulse.Api_HostAddress}}/api/Instruments/
 Accept: application/json

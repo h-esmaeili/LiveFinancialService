@@ -6,6 +6,18 @@ using MarketPulse.Api.ServiceWorker;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure CORS to allow all origins (for development/testing purposes)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -27,6 +39,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use the CORS policy in the app
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 

@@ -1,4 +1,5 @@
-﻿using MarketPulse.Api.Service;
+﻿using MarketPulse.Api.Models;
+using MarketPulse.Api.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MarketPulse.Api.Controllers
@@ -8,36 +9,52 @@ namespace MarketPulse.Api.Controllers
     public class InstrumentsController : ControllerBase
     {
         private readonly IInstrumentService _instrumentService;
-        public InstrumentsController(IInstrumentService instrumentService)
+        private readonly ILogger<InstrumentsController> _logger;
+        public InstrumentsController(IInstrumentService instrumentService, ILogger<InstrumentsController> logger)
         {
             _instrumentService = instrumentService;
+            _logger = logger;
         }
-        // Mocked data for demonstration
-        private static readonly List<string> Instruments = new List<string> { "EURUSD", "USDJPY", "BTCUSD" };
-
+     
         // GET: api/instruments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<string>>> GetInstruments(string instrument)
+        public async Task<ActionResult<BaseResponse<List<InstrumentModel>>>> GetInstruments()
         {
-            // Retrieve the list of available instruments
-            var Instruments = await _instrumentService.List(instrument);
-
-            return Ok(Instruments);
-        }
-
-        // GET: api/instruments/{symbol}
-        [HttpGet("{symbol}")]
-        public async Task<ActionResult<Models.InstrumentPriceModel>> GetInstrumentPrice(string symbol)
-        {
-            // For demonstration, let's mock a price.
-            // You can replace this with a call to your data provider (e.g., Tiingo or Binance).
-            var price = await _instrumentService.GetPrice(symbol);
-            if (price == null)
+            var model = new BaseResponse<List<InstrumentModel>>();
+            try
             {
-                return NotFound($"Instrument '{symbol}' not found.");
-            }
+                // Retrieve the list of available instruments
+                var instruments = await _instrumentService.List();
+                model.Data = instruments;
+                model.Success = true;
 
-            return Ok(price);
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred when getting instruments.");
+                throw ex;
+            }
+        }
+        // GET: api/instruments/{instrument}
+        [HttpGet("{instrument}")]
+        public async Task<ActionResult<InstrumentPriceModel>> GetInstrumentPrice(string instrument)
+        {
+            try
+            {
+                var result = await _instrumentService.GetPrice(instrument);
+                if (result == null)
+                {
+                    return NotFound($"Instrument '{instrument}' not found.");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred when getting instrument price.");
+                throw ex;
+            }
         }
     }
 }
