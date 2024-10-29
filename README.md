@@ -35,13 +35,16 @@ cd MarketPulse
 ```
 ### 2. Backend Setup(API)
 ```bash
-cd server
+cd Server/MarketPulse.Api
 dotnet restore
 dotnet build
 ```
 ### Configuration
 **Tiingo API Key:** Add your API key for Tiingo in the configuration file.
 ### Run the Backend
+```bash
+dotnet run
+```
 The API will be available at `http://localhost:50600`
 
 ### 3. Frontend Setup(React)
