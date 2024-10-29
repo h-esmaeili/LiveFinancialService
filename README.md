@@ -77,3 +77,17 @@ MarketPulse/
 ├── README.md
 └── LICENSE
 ```
+# Sequence Diagram: Communication Flow between Components
+
+This sequence diagram illustrates the communication flow for real-time crypto price updates between the user's browser, backend, and Tiingo API.
+
+### Steps:
+1. **User's Browser (React Application)** initiates a WebSocket connection to the **.NET Core Backend**.
+2. The **.NET Core Backend** establishes a WebSocket connection to **Tiingo API** to retrieve live crypto price data.
+3. **Tiingo API** streams crypto price updates to the **.NET Core Backend**.
+4. The **.NET Core Backend** processes the data and pushes updates to the **User's Browser (React Application)** via WebSocket.
+
+### Diagram:
+![image](https://github.com/user-attachments/assets/f776a3f7-b260-4dbc-927c-e631729d93f1)
+
+
