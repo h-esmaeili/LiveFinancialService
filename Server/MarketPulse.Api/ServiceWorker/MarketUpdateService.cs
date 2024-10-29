@@ -43,7 +43,6 @@ namespace MarketPulse.Api.ServiceWorker
 
             // Broadcast to all connected clients
             var message = JsonConvert.DeserializeObject<MarketData>(data);
-
             if (message != null && message.messageType == "A")
                 await _connectionManager.BroadcastToClientsAsync(data);
         }
