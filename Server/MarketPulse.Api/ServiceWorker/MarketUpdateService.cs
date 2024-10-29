@@ -1,9 +1,9 @@
 ﻿using MarketPulse.Api.Middleware;
-using System.Net.WebSockets;
-using System.Text.Json;
-using System.Text;
 using MarketPulse.Api.Models;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Net.WebSockets;
+using System.Text;
 
 namespace MarketPulse.Api.ServiceWorker
 {
@@ -42,8 +42,7 @@ namespace MarketPulse.Api.ServiceWorker
             Console.WriteLine("Data recieved...");
 
             // Broadcast to all connected clients
-            var message = JsonSerializer.Deserialize<MarketData>(data);
-
+            var message = JsonConvert.DeserializeObject<MarketData>(data);
             if (message != null && message.messageType == "A")
                 await _connectionManager.BroadcastToClientsAsync(data);
         }
@@ -58,7 +57,7 @@ namespace MarketPulse.Api.ServiceWorker
                 eventData = new { thresholdLevel = 2 }
             };
 
-            var message = JsonSerializer.Serialize(subscribeMessage);
+            var message = JsonConvert.SerializeObject(subscribeMessage);
             var messageBytes = Encoding.UTF8.GetBytes(message);
 
             // Send the subscription message

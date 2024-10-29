@@ -1,8 +1,22 @@
 using MarketPulse.Api.Middleware;
 using MarketPulse.Api.Models;
+using MarketPulse.Api.Service;
+using MarketPulse.Api.ServiceAgent;
 using MarketPulse.Api.ServiceWorker;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure CORS to allow all origins (for development/testing purposes)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -14,6 +28,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<TiingoSettings>(builder.Configuration.GetSection("TiingoSettings"));
 builder.Services.AddSingleton<WebSocketConnectionManager>();
 builder.Services.AddHostedService<MarketUpdateService>();
+builder.Services.AddHttpClient<MarketApiClient>(options => { options.BaseAddress = new Uri("https://api.tiingo.com"); });
+builder.Services.AddScoped<IInstrumentService, InstrumentService>();
 
 var app = builder.Build();
 
@@ -23,6 +39,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use the CORS policy in the app
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
