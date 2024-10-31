@@ -1,4 +1,5 @@
-﻿using MarketPulse.Api.Middleware;
+﻿using MarketPulse.Api.Configs;
+using MarketPulse.Api.Middleware;
 using MarketPulse.Api.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -20,11 +21,11 @@ namespace MarketPulse.Api.ServiceWorker
         {
             using var clientWebSocket = new ClientWebSocket();
             clientWebSocket.Options.SetRequestHeader("Authorization", _settings.ApiKey);
-            var tiingoUri = new Uri(_settings.Uri);
+            var tiingoUri = new Uri(_settings.WebSockets.Uri);
             await clientWebSocket.ConnectAsync(tiingoUri, stoppingToken);
 
             // Send subscription message to Tiingo
-            await SubscribeToTickerAsync(clientWebSocket, _settings.Ticker);
+            await SubscribeToTickerAsync(clientWebSocket, _settings.WebSockets.Ticker);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -53,7 +54,7 @@ namespace MarketPulse.Api.ServiceWorker
             {
                 eventName = "subscribe",
                 authorization = _settings.ApiKey,
-                ticker = _settings.Ticker,
+                ticker = _settings.WebSockets.Ticker,
                 eventData = new { thresholdLevel = 2 }
             };
 
