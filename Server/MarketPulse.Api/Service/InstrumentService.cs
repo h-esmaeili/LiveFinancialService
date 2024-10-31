@@ -5,10 +5,10 @@ namespace MarketPulse.Api.Service
 {
     public class InstrumentService : IInstrumentService
     {
-        private readonly MarketApiClient _apiClient;
+        private readonly TiingoApiClient _apiClient;
         private readonly ILogger<InstrumentService> _logger;
         // Mocked data for demonstration
-        public InstrumentService(MarketApiClient apiClient, ILogger<InstrumentService> logger)
+        public InstrumentService(TiingoApiClient apiClient, ILogger<InstrumentService> logger)
         {
             _apiClient = apiClient;
             _logger = logger;
