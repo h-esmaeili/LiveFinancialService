@@ -3,85 +3,71 @@ import { format } from 'date-fns';
 import { DataService } from '../services';
 
 const MarketWatcher = () => {
-  const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
-  const socket = new WebSocket('ws://localhost:50600/ws');
+  const [tickets, setTickets] = useState([]);
+  const [availableMarkets, setAvailableMarkets] = useState([]);
 
-  const getMarkets = () => {
-    DataService.get(`api/Instruments?filter=`)
-      .then(function (response) {
-        const { data } = response;
-        setMarkets(data);
-        setLoading(false);
-      })
-      .catch((e) => {
-        
-      });
-  }
+// Fetch the list of available markets only once
+useEffect(() => {
+  const fetchMarkets = async () => {
+    try {
+      const response = await DataService.get('api/Instruments?filter='); 
+      const { data, success } = await response.json();
+      debugger;
+      setAvailableMarkets(data);
+    } catch (error) {
+      console.error("Failed to fetch markets:", error);
+    }
+  };
 
+  fetchMarkets();
+}, []); // Empty dependency array ensures this runs only once
 
-  useEffect(() => {
-    getMarkets();
+// Set up the WebSocket connection once available markets are fetched
+useEffect(() => {
+  if (availableMarkets.length === 0) return; // Ensure markets are loaded before setting up WebSocket
 
-    if(!loading) {
-      // Event listener for when the connection opens
-      socket.onopen = () => {
-        setConnectionStatus("Connected");
-        console.log('WebSocket connection opened');
-      };
+  const ws = new WebSocket('ws://localhost:50600/ws');
 
-      // Event listener for incoming messages
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const { data: items = [] } = data;
-        const name = items[1];
-        const price = items[5];
-        const lastUpdated = format(new Date(items[2]), 'MMMM dd, yyyy HH:mm:ss');
+  ws.onopen = () => {
+    console.log("Connected to WebSocket server");
+  };
 
-        const existingMarket = markets.find((market) => market.name === name);
-        if (!existingMarket) {
-          return;
-        }
+  ws.onmessage = (event) => {
+    const newTickets = JSON.parse(event.data);
+    console.log("Received tickets:", newTickets);
 
-        const market = { ...existingMarket, name, price: price.toFixed(2), lastUpdated };
-
-        console.log('WebSocket message received:', data);
-    
-        setMarkets((prevMarkets) => {
-          const existingMarketIndex = prevMarkets.findIndex((market) => market.name === name);
-          if (existingMarketIndex !== -1) {
-            // Update the existing message
-            const updatedMarkets = [...prevMarkets];
-            updatedMarkets[existingMarketIndex] = market;
-            return updatedMarkets;
-          } else {
-            // Add the new item
-            return [market, ...prevMarkets];
-          }
-        });
-
-      };
-
-      // Event listener for connection errors
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setConnectionStatus("Error");
-      };
-
-      // Event listener for when the connection closes
-      socket.onclose = () => {
-        setConnectionStatus("Disconnected");
-        console.log('WebSocket connection closed');
-      };
-
+    const { data: items = [] } = newTickets;
+    const name = items[1];
+    const price = items[5];
+    const lastUpdated = format(new Date(items[2]), 'MMMM dd, yyyy HH:mm:ss');
+    const existingMarket = availableMarkets.find((market) => market.name === name);
+    if (!existingMarket) {
+      return;
     }
 
-    // Clean up the WebSocket connection when the component unmounts
-    return () => {
-      socket.close();
-    };
-  }, [loading]); // Empty dependency array to only run on mount and unmount
+    const market = { ...existingMarket, name, price: price.toFixed(2), lastUpdated };
+    
+    setTickets((prevTickets) => {
+      const existingTicketIndex = prevTickets.findIndex((ticket) => ticket.name === name);
+      if (existingTicketIndex !== -1) {
+        // Update the existing message
+        const updatedTickets = [...prevTickets];
+        updatedTickets[existingTicketIndex] = market;
+        return updatedTickets;
+      } else {
+        // Add the new item
+        return [market, ...prevTickets];
+      }
+    });
+  };
+
+  ws.onclose = () => {
+    console.log("Disconnected from WebSocket server");
+  };
+
+  return () => ws.close();
+}, [availableMarkets]); // This useEffect depends on availableMarkets
+
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -139,7 +125,7 @@ const MarketWatcher = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {markets.map((market) => (
+                {tickets.map((market) => (
                   <tr key={market.name}>
                     <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900 sm:pl-0">
                       {market.name.toUpperCase()}
