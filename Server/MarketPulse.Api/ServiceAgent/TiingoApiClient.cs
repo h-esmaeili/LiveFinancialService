@@ -1,20 +1,23 @@
-﻿using MarketPulse.Api.Models;
+﻿using MarketPulse.Api.Configs;
+using MarketPulse.Api.Models;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace MarketPulse.Api.ServiceAgent
 {
-    public class MarketApiClient
+    public class TiingoApiClient
     {
         private readonly HttpClient _httpClient;
-        private readonly string token = "f1057513a9f1f229eb129d191a489e9dd58cd357";
-        public MarketApiClient(HttpClient httpClient)
+        private readonly TiingoSettings _apiConfig;
+        public TiingoApiClient(HttpClient httpClient, IOptions<TiingoSettings> settings)
         {
             _httpClient = httpClient;
+            _apiConfig = settings.Value;
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         }
         public async Task<List<InstrumentModel>> GetInstruments(string instrument)
         {
-            var response = await _httpClient.GetAsync($"tiingo/crypto?token={token}");
+            var response = await _httpClient.GetAsync($"tiingo/crypto?token={_apiConfig.ApiKey}");
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<InstrumentModel>>(content);
 
@@ -22,8 +25,8 @@ namespace MarketPulse.Api.ServiceAgent
         }
         public async Task<List<InstrumentDataModel>> GetInstrumentPrice(string instrument)
         {
-            var startDate = DateTime.Now.AddDays(5).Date.ToString("yyyy-MM-dd");
-            var response = await _httpClient.GetAsync($"tiingo/crypto/prices?tickers={instrument}&startDate={startDate}&resampleFreq=5min&token={token}");
+            var startDate = DateTime.Now.AddDays(-2).Date.ToString("yyyy-MM-dd");
+            var response = await _httpClient.GetAsync($"tiingo/crypto/prices?tickers={instrument}&startDate={startDate}&resampleFreq=5min&token={_apiConfig.ApiKey}");
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<InstrumentDataModel>>(content);
             
