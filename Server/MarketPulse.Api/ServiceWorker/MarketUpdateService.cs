@@ -40,8 +40,6 @@ namespace MarketPulse.Api.ServiceWorker
             var result = await clientWebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
             var data = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-            Console.WriteLine("Data recieved...");
-
             // Broadcast to all connected clients
             var message = JsonConvert.DeserializeObject<MarketData>(data);
             if (message != null && message.messageType == "A")

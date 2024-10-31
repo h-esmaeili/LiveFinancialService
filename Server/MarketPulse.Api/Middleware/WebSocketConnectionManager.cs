@@ -15,6 +15,7 @@ namespace MarketPulse.Api.Middleware
         public void AddClient(string clientId, WebSocket socket)
         {
             _clients.TryAdd(clientId, socket);
+            _logger.LogInformation($"Client has been added. clientId: {clientId}");
         }
 
         public async Task RemoveClient(string clientId)
@@ -23,12 +24,13 @@ namespace MarketPulse.Api.Middleware
             {
                 await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed", CancellationToken.None);
             }
+            _logger.LogInformation($"Client has been removed. clientId: {clientId}");
         }
 
         public async Task BroadcastToClientsAsync(string message)
         {
             var buffer = Encoding.UTF8.GetBytes(message);
-            _logger.LogInformation($"Change received: {message}. Broadcasting the change to {_clients.Count.ToString("n")}");
+            //_logger.LogInformation($"Change received: {message}. Broadcasting the change to {_clients.Count.ToString("n")}");
 
             foreach (var client in _clients.Values)
             {
